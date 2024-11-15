@@ -1,4 +1,5 @@
-﻿using App.Repository;
+﻿using App.Helpers;
+using App.Repository;
 
 if (args.Length < 4)
 {
@@ -17,13 +18,18 @@ for (var i = 0; i < args.Length; i += 2)
 
 var hotels = HotelsRepository.InitHotels(sources["hotels"]);
 var bookings = BookingsRepository.InitBookings(sources["bookings"]);
+var commandManager = new CommandManager(hotels, bookings, new DateProvider());
 
 while (true)
 {
     var command = Console.ReadLine();
-    if (command == "")
+    if (string.IsNullOrEmpty(command))
     {
         break;
+    }
+    else
+    {
+        Console.WriteLine(commandManager.ExecuteCommand(command));
     }
 }
 

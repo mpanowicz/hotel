@@ -10,8 +10,8 @@ public class HotelsRepository
         this.hotels = hotels;
     }
 
-    public IList<Hotel> Hotels => hotels;
-    private readonly IList<Hotel> hotels = [];
+    public IEnumerable<Hotel> Hotels => hotels;
+    private readonly IEnumerable<Hotel> hotels = [];
 
     public static HotelsRepository InitHotels(string jsonPath)
     {
@@ -20,6 +20,15 @@ public class HotelsRepository
         return hotels is not null
             ? new HotelsRepository(hotels)
             : new HotelsRepository([]);
+    }
+
+    public int GetNumberOfRooms(string hotelId, string roomType)
+    {
+        return Hotels
+            .Where(x => x.Id == hotelId)
+            .SelectMany(x => x.Rooms)
+            .Where(x => x.RoomType == roomType)
+            .Count();
     }
 }
 

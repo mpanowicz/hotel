@@ -17,6 +17,6 @@ public class HotelsRepositoryTests
     {
         var repository = BookingsRepository.InitBookings("bookings.json");
 
-        Assert.Equal(2, repository.Bookings.Count);
+        Assert.Equal(2, repository.Bookings.Count());
     }
 }
