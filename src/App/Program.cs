@@ -5,7 +5,7 @@ if (args.Length < 4)
 {
     Console.WriteLine(@"
 Please provide the path to the hotels bookings.
-hotel --hotels hotels.json --bookings bookings.json
+App.exe --hotels hotels.json --bookings bookings.json
 ");
     return;
 }
