@@ -13,8 +13,8 @@ public partial class CommandManager(HotelsRepository hotelsRepository, BookingsR
     {
         return command switch
         {
-            var cmd when command.StartsWith("Availability") => GetAvailabilityCount(cmd),
-            var cmd when command.StartsWith("Search") => SearchAvailability(cmd),
+            var cmd when command.StartsWith(Availability) => GetAvailabilityCount(cmd),
+            var cmd when command.StartsWith(Search) => SearchAvailability(cmd),
             _ => "Unknown command"
         };
     }
@@ -23,11 +23,11 @@ public partial class CommandManager(HotelsRepository hotelsRepository, BookingsR
     {
         var regex = AvailabilityRegex();
         var match = regex.Match(cmd);
-        var hotelId = match.Groups["hotelId"].Value;
-        var roomType = match.Groups["roomType"].Value;
-        var dateRange = match.Groups["dateRange"].Value.Split("-");
-        var startDate = DateOnly.ParseExact(dateRange[0], "yyyyMMdd");
-        var endDate = dateRange.Length > 1 ? DateOnly.ParseExact(dateRange[1], "yyyyMMdd") : startDate;
+        var hotelId = match.Groups[HotelId].Value;
+        var roomType = match.Groups[RoomType].Value;
+        var dateRange = match.Groups[DateRange].Value.Split("-");
+        var startDate = DateOnly.ParseExact(dateRange[0], Configuration.DateFormat);
+        var endDate = dateRange.Length > 1 ? DateOnly.ParseExact(dateRange[1], Configuration.DateFormat) : startDate;
 
         var rooms = hotelsRepository.GetNumberOfRooms(hotelId, roomType);
         var booked = bookingsRepository.GetOverlappingBookings(hotelId, roomType, startDate, endDate).Count();
@@ -41,9 +41,9 @@ public partial class CommandManager(HotelsRepository hotelsRepository, BookingsR
     {
         var regex = SearchRegex();
         var match = regex.Match(cmd);
-        var hotelId = match.Groups["hotelId"].Value;
-        var roomType = match.Groups["roomType"].Value;
-        var days = int.Parse(match.Groups["days"].Value);
+        var hotelId = match.Groups[HotelId].Value;
+        var roomType = match.Groups[RoomType].Value;
+        var days = int.Parse(match.Groups[Days].Value);
         var searchStart = dateProvider.Today();
         var searchEnd = searchStart.AddDays(days);
 
@@ -52,18 +52,25 @@ public partial class CommandManager(HotelsRepository hotelsRepository, BookingsR
 
         var output = string.Join(",\n", available.Select(x =>
         {
-            var start = x.Key.Item1.ToString("yyyyMMdd");
-            var end = x.Key.Item1 != x.Key.Item2 ? "-" + x.Key.Item2.ToString("yyyyMMdd") : "";
+            var start = x.Key.Item1.ToString(Configuration.DateFormat);
+            var end = x.Key.Item1 != x.Key.Item2 ? "-" + x.Key.Item2.ToString(Configuration.DateFormat) : "";
             return string.Format("({0}{1}, {2})", start, end, x.Value);
         }));
 
         return output;
     }
 
-    [GeneratedRegex("Availability\\((?<hotelId>(.*?)), (?<dateRange>(.*?)), (?<roomType>(.*?))\\)")]
+    [GeneratedRegex($"{Availability}\\((?<{HotelId}>(.*?)), (?<{DateRange}>(.*?)), (?<{RoomType}>(.*?))\\)")]
     private static partial Regex AvailabilityRegex();
-    [GeneratedRegex("Search\\((?<hotelId>(.*?)), (?<days>(.*?)), (?<roomType>(.*?))\\)")]
+    [GeneratedRegex($"{Search}\\((?<{HotelId}>(.*?)), (?<{Days}>(.*?)), (?<{RoomType}>(.*?))\\)")]
     private static partial Regex SearchRegex();
+
+    private const string Availability = "Availability";
+    private const string Search = "Search";
+    private const string HotelId = "hotelId";
+    private const string RoomType = "roomType";
+    private const string DateRange = "dateRange";
+    private const string Days = "days";
 }
 
 
